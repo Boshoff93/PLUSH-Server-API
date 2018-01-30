@@ -9,7 +9,7 @@ import (
 func main() {
     session, err := r.Connect(r.ConnectOpts{
       Address: "localhost:28015",
-      Database: "rtsupport",
+      Database: "plush_data",
     })
     if err != nil {
       log.Panic(err.Error())
@@ -19,6 +19,8 @@ func main() {
 
     router.Handle("user add", addUser)
     router.Handle("user find", findUser)
+    router.Handle("post add", addPost)
+    router.Handle("posts get", getPosts)
     http.Handle("/", router)
     http.ListenAndServe(":4000", nil)
 }
