@@ -2,23 +2,24 @@ package main
 
 import (
   "github.com/mitchellh/mapstructure"
-  r "gopkg.in/gorethink/gorethink.v4"
   "fmt"
+  "time"
 )
 
 type User struct {
-  Id    string `gorethink:"id"`
-  Name  string  `gorethink:"name"`
+  User_Id    string `cql:"uuid"`
+  Name  string    `cql:"name"`
 }
 
 type Post struct {
-  User_Id    string `gorethink:"user_id"`
-  Post  string  `gorethink:"post"`
+  User_Id     string `cql:"uuid"`
+  Post_Id     string `cql:"timeuuid"`
+  Post        string
 }
 
 type Posts struct {
-  User_Id    string `gorethink:"user_id"`
-  Posts  []string `gorethink:"posts"`
+  Post_Ids     []time.Time
+  Posts       []string
 }
 
 type Message struct {
@@ -28,83 +29,55 @@ type Message struct {
 
 func findUser(client *Client, data interface{}){
   var user User
-  fmt.Println(data)
   err := mapstructure.Decode(data, &user)
   if err != nil {
-    client.send <- Message{"error", err.Error()}
+    client.send <- Message{"error", "could not decode findUser"}
     return
   }
 
   go func() {
-    res, err := r.Table("user").Run(client.session)
-    if err != nil {
-      client.send <- Message{"error", "can't access table"}
+    var name string
+    var user_id string
+    if err := client.session.Query("SELECT * FROM users WHERE name = ?",user.Name).Scan(&name, &user_id); err != nil {
+      client.send <- Message{"username availible", user}
       return
     }
-    var row User
-    for res.Next(&row) {
-      if(row.Name == user.Name) {
-        client.send <- Message{"username unavailible", row}
-        res.Close()
-        return
-      }
-    }
-    fmt.Println(user.Name + " is not taken")
-    client.send <- Message{"username availible", user}
+    user.User_Id = user_id
+    fmt.Println(name + " is taken")
+    client.send <- Message{"username unavailible", user}
   }()
 
 }
 
+
 func addUser(client *Client, data interface{}){
   var user User
-  fmt.Println(data)
   err := mapstructure.Decode(data, &user)
   if err != nil {
-    client.send <- Message{"error", "could not decode user"}
+    client.send <- Message{"error", "could not decode addUser"}
     return
   }
 
   go func() {
-    _, err := r.Table("user").
-      Insert(user).
-      RunWrite(client.session)
-    if err != nil {
-      fmt.Println("failed to add initial user")
-      client.send <- Message{"error", err.Error()}
-    }
-
-    var posts Posts
-    posts.User_Id = user.Id
-    posts.Posts = []string{}
-
-    _, err2 := r.Table("post").
-      Insert(posts).
-      RunWrite(client.session)
-    if err2 != nil {
-      fmt.Println("failed to add initial post")
-      client.send <- Message{"error", err.Error()}
-    }
-
-    client.send <- Message{"user add", user}
+  if err := client.session.Query("INSERT INTO users (name, user_id) VALUES (?,?)",user.Name, user.User_Id).Exec(); err != nil {
+    fmt.Println(err.Error());
+  }
+  client.send <- Message{"user add", user}
   }()
 
 }
 
 func addPost(client *Client, data interface{}){
   var post Post
-  fmt.Println(data)
   err := mapstructure.Decode(data, &post)
   if err != nil {
-    client.send <- Message{"error", "could not decode post"}
+    client.send <- Message{"error", "could not decode addPost"}
     return
   }
 
   go func() {
-    _, err := r.Table("post").Filter(r.Row.Field("user_id").Eq(post.User_Id)).Update(map[string]interface{}{"posts": r.Row.Field("posts").Append(post.Post)}).
-      RunWrite(client.session)
-    if err != nil {
-      fmt.Println("failed to update posts")
-      client.send <- Message{"error", err.Error()}
+    if err := client.session.Query("INSERT INTO posts (user_id, post_id, content) VALUES (?,?,?)",post.User_Id, post.Post_Id , post.Post).Exec(); err != nil {
+      fmt.Println(err.Error());
     }
     client.send <- Message{"post add", post}
   }()
@@ -113,31 +86,22 @@ func addPost(client *Client, data interface{}){
 
 func getPosts(client *Client, data interface{}){
   var user User
-  fmt.Println(data)
   err := mapstructure.Decode(data, &user)
   if err != nil {
-    client.send <- Message{"error", "could not decode"}
+    client.send <- Message{"error", "could not decode getPosts"}
     return
   }
 
   go func() {
-    res, err := r.Table("post").Run(client.session)
-    if err != nil {
-      client.send <- Message{"error", "can't access table"}
-      return
-    }
-    var row Posts
-    for res.Next(&row) {
-      if(row.User_Id == user.Id) {
-        res.Close()
-        fmt.Println("------------")
-        fmt.Println(row)
-
-        client.send <- Message{"posts get", row.Posts}
-        return
-      }
-    }
-
+    var posts Posts
+    var post_id time.Time
+    var content string
+    itr := client.session.Query("SELECT toTimeStamp(post_id), content FROM posts WHERE user_id = ?",user.User_Id).Iter()
+    for itr.Scan(&post_id, &content) {
+		    posts.Post_Ids = append(posts.Post_Ids,post_id)
+        posts.Posts = append(posts.Posts ,content)
+	     }
+    client.send <- Message{"posts get", posts}
   }()
 
 }

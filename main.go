@@ -2,18 +2,18 @@ package main
 
 import (
   "net/http"
-  r "gopkg.in/gorethink/gorethink.v4"
-  "log"
+  "github.com/gocql/gocql"
+  "fmt"
 )
 
 func main() {
-    session, err := r.Connect(r.ConnectOpts{
-      Address: "localhost:28015",
-      Database: "plush_data",
-    })
+    cluster := gocql.NewCluster("127.0.0.1")
+    cluster.Keyspace = "plush_keyspace"
+    session, err := cluster.CreateSession()
     if err != nil {
-      log.Panic(err.Error())
+      fmt.Println(err);
     }
+    defer session.Close()
 
     router := NewRouter(session)
 

@@ -3,7 +3,7 @@ package main
 import (
   "fmt"
   "github.com/gorilla/websocket"
-  r "gopkg.in/gorethink/gorethink.v4"
+  r "github.com/gocql/gocql"
 )
 
 type FindHandler func(string) (Handler, bool)
