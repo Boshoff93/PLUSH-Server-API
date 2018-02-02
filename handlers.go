@@ -19,13 +19,15 @@ type Post struct {
 }
 
 type PostAdded struct {
-  User_Id     string
-  Post_Id     time.Time
-  Post        string
+  User_Id       string
+  Post_Time     time.Time
+  Post_Id       string
+  Post          string
 }
 
 type Posts struct {
-  Post_Ids     []time.Time
+  Post_Ids     []string
+  Post_Times   []time.Time
   Posts       []string
 }
 
@@ -95,10 +97,29 @@ func addPost(client *Client, data interface{}){
     //have to use a different struct
     var postAdded PostAdded
     postAdded.User_Id = post.User_Id
-    postAdded.Post_Id = tempUUID.Time()
+    postAdded.Post_Time = tempUUID.Time()
+    postAdded.Post_Id = post.Post_Id
     postAdded.Post = post.Post
     client.send <- Message{"post add", postAdded}
   }()
+
+}
+
+func deletePost(client *Client, data interface{}){
+  var post Post
+  err := mapstructure.Decode(data, &post)
+  if err != nil {
+    client.send <- Message{"error", "could not decode addPost"}
+    return
+  }
+
+   go func() {
+    if err := client.session.Query("DELETE * FROM posts WHERE post_id = ?)", post.Post_Id).Exec(); err != nil {
+      fmt.Println(err.Error());
+    }
+  }()
+
+  //No need to send anything to the client, deleting posts in state right when the delete post request is sent
 
 }
 
@@ -112,13 +133,16 @@ func getPosts(client *Client, data interface{}){
 
   go func() {
     var posts Posts
-    var post_id time.Time
+    var post_id string
     var content string
-    itr := client.session.Query("SELECT toTimeStamp(post_id), content FROM posts WHERE user_id = ?",user.User_Id).Iter()
-    for itr.Scan(&post_id, &content) {
-		    posts.Post_Ids = append(posts.Post_Ids,post_id)
+    var post_time time.Time
+    itr := client.session.Query("SELECT toTimeStamp(post_id), post_id, content FROM posts WHERE user_id = ?",user.User_Id).Iter()
+    for itr.Scan(&post_time,&post_id, &content) {
+		    posts.Post_Ids = append(posts.Post_Ids, post_id)
+        posts.Post_Times = append(posts.Post_Times, post_time)
         posts.Posts = append(posts.Posts ,content)
-	     }
+      }
+      fmt.Println(posts)
     client.send <- Message{"posts get", posts}
   }()
 

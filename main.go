@@ -21,6 +21,7 @@ func main() {
     router.Handle("user find", findUser)
     router.Handle("post add", addPost)
     router.Handle("posts get", getPosts)
+    router.Handle("post delete", deletePost)
     http.Handle("/", router)
     http.ListenAndServe(":4000", nil)
 }
