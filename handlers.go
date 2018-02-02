@@ -4,6 +4,7 @@ import (
   "github.com/mitchellh/mapstructure"
   "fmt"
   "time"
+  "github.com/gocql/gocql"
 )
 
 type User struct {
@@ -14,6 +15,12 @@ type User struct {
 type Post struct {
   User_Id     string `cql:"uuid"`
   Post_Id     string `cql:"timeuuid"`
+  Post        string
+}
+
+type PostAdded struct {
+  User_Id     string
+  Post_Id     time.Time
   Post        string
 }
 
@@ -79,7 +86,18 @@ func addPost(client *Client, data interface{}){
     if err := client.session.Query("INSERT INTO posts (user_id, post_id, content) VALUES (?,?,?)",post.User_Id, post.Post_Id , post.Post).Exec(); err != nil {
       fmt.Println(err.Error());
     }
-    client.send <- Message{"post add", post}
+    //Convert string uuidv1 to uuidv1 then extract the Time before sending it back to the client
+    tempUUID, err := gocql.ParseUUID(post.Post_Id);
+    if err != nil {
+       client.send <- Message{"error", err.Error()}
+		   fmt.Printf("Something went wrong: %s", err)
+	  }
+    //have to use a different struct
+    var postAdded PostAdded
+    postAdded.User_Id = post.User_Id
+    postAdded.Post_Id = tempUUID.Time()
+    postAdded.Post = post.Post
+    client.send <- Message{"post add", postAdded}
   }()
 
 }
