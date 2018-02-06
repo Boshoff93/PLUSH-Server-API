@@ -73,7 +73,25 @@ func addUser(client *Client, data interface{}){
   }
   client.send <- Message{"user add", user}
   }()
+}
 
+func getUserView(client *Client, data interface{}){
+  var user User
+  err := mapstructure.Decode(data, &user)
+  if err != nil {
+    client.send <- Message{"error", "could not decode getUserView"}
+    return
+  }
+
+  go func() {
+  var name string
+  var user_id string
+  if err := client.session.Query("SELECT * FROM users WHERE name = ?",user.Name).Scan(&name, &user_id); err != nil {
+    fmt.Println("User Does Not Exist");
+  }
+  user.User_Id = user_id
+  client.send <- Message{"get user", user}
+  }()
 }
 
 func addPost(client *Client, data interface{}){
@@ -114,13 +132,12 @@ func deletePost(client *Client, data interface{}){
   }
 
    go func() {
-    if err := client.session.Query("DELETE * FROM posts WHERE post_id = ?)", post.Post_Id).Exec(); err != nil {
+    if err := client.session.Query("DELETE FROM posts WHERE user_id = ? AND post_id = ?",post.User_Id, post.Post_Id).Exec(); err != nil {
       fmt.Println(err.Error());
     }
   }()
-
+  client.send <- Message{"delete post", post}
   //No need to send anything to the client, deleting posts in state right when the delete post request is sent
-
 }
 
 func getPosts(client *Client, data interface{}){
