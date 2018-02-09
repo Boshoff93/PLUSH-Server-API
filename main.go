@@ -22,7 +22,9 @@ func main() {
     router.Handle("post add", addPost)
     router.Handle("posts get", getPosts)
     router.Handle("post delete", deletePost)
-    router.Handle("get user", getUserView)
+    router.Handle("user get", getUserView)
+    router.Handle("profile picture add", addProfilePicture)
+    router.Handle("profile picture get", getProfilePicture)
     http.Handle("/", router)
     http.ListenAndServe(":4000", nil)
 }

@@ -31,6 +31,12 @@ type Posts struct {
   Posts       []string
 }
 
+type Blob struct {
+	User_Id  string    `cql:"uuid"`
+	Data     string    `cql:"text"`// Formatted as Base64 but I would prefer Base64Url...
+}
+
+
 type Message struct {
   Name string `json:"name"`
   Data interface{} `json:"data"`
@@ -82,6 +88,7 @@ func getUserView(client *Client, data interface{}){
     client.send <- Message{"error", "could not decode getUserView"}
     return
   }
+  fmt.Println(user)
 
   go func() {
   var name string
@@ -90,7 +97,7 @@ func getUserView(client *Client, data interface{}){
     fmt.Println("User Does Not Exist");
   }
   user.User_Id = user_id
-  client.send <- Message{"get user", user}
+  client.send <- Message{"user get", user}
   }()
 }
 
@@ -130,13 +137,12 @@ func deletePost(client *Client, data interface{}){
     client.send <- Message{"error", "could not decode addPost"}
     return
   }
-
    go func() {
     if err := client.session.Query("DELETE FROM posts WHERE user_id = ? AND post_id = ?",post.User_Id, post.Post_Id).Exec(); err != nil {
       fmt.Println(err.Error());
     }
   }()
-  client.send <- Message{"delete post", post}
+  client.send <- Message{"post delete", post}
   //No need to send anything to the client, deleting posts in state right when the delete post request is sent
 }
 
@@ -161,6 +167,47 @@ func getPosts(client *Client, data interface{}){
       }
       fmt.Println(posts)
     client.send <- Message{"posts get", posts}
+  }()
+
+}
+
+func addProfilePicture(client *Client, data interface{}){
+  var blob Blob
+  err := mapstructure.Decode(data, &blob)
+  if err != nil {
+    client.send <- Message{"error", "could not decode addProfilePicture"}
+    return
+  }
+  fmt.Println(blob)
+
+   go func() {
+    if err := client.session.Query("INSERT INTO profile_pictures (user_id, profile_picture) VALUES (?,?)",blob.User_Id, blob.Data).Exec(); err != nil {
+      fmt.Println(err.Error());
+    }
+    client.send <- Message{"profile picture add", blob}
+  }()
+
+}
+
+func getProfilePicture(client *Client, data interface{}){
+  var user User
+  err := mapstructure.Decode(data, &user)
+  if err != nil {
+    client.send <- Message{"error", "could not decode getProfilePicture"}
+    return
+  }
+
+  go func() {
+    var image string
+    var user_id string
+    if err := client.session.Query("SELECT * FROM profile_pictures WHERE user_id = ?",user.User_Id).Scan(&user_id, &image); err != nil {
+      client.send <- Message{"profile picture get", "" }
+      return
+    }
+    var blob Blob
+    blob.Data = image
+    blob.User_Id = user_id
+    client.send <- Message{"profile picture get", blob}
   }()
 
 }
