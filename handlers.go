@@ -5,11 +5,16 @@ import (
   "fmt"
   "time"
   "github.com/gocql/gocql"
+  "golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-  User_Id    string `cql:"uuid"`
-  Name  string    `cql:"name"`
+  User_Id     string      `cql:"uuid"`
+  Firstname   string      `cql:"firstname"`
+  Lastname    string      `cql:"lastname"`
+  Email       string      `cql:"email"`
+  Password    string      `cql:"password"`
+  Created_At  string      `cql:"timeuuid"`
 }
 
 type Post struct {
@@ -42,6 +47,16 @@ type Message struct {
   Data interface{} `json:"data"`
 }
 
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
+}
+
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
 func findUser(client *Client, data interface{}){
   var user User
   err := mapstructure.Decode(data, &user)
@@ -51,19 +66,31 @@ func findUser(client *Client, data interface{}){
   }
 
   go func() {
-    var name string
+    var email string
+    var firstname string
+    var lastname string
+    var password string
     var user_id string
-    if err := client.session.Query("SELECT * FROM users WHERE name = ?",user.Name).Scan(&name, &user_id); err != nil {
-      client.send <- Message{"username availible", user}
+    if err := client.session.Query("SELECT email, firstname, lastname, password, user_id FROM users_by_email WHERE email = ?",
+                                    user.Email).Scan(&email, &firstname, &lastname, &password, &user_id); err != nil {
+
+      client.send <- Message{"account not found", ""}
       return
     }
-    user.User_Id = user_id
-    fmt.Println(name + " is taken")
-    client.send <- Message{"username unavailible", user}
+
+    match := CheckPasswordHash(user.Password, password)
+    if(match) {
+      var userFound User
+      userFound.Firstname = firstname
+      userFound.Lastname = lastname
+      userFound.Email = email
+      userFound.User_Id = user_id
+      client.send <- Message{"access granted", userFound}
+    } else {
+      client.send <- Message{"access denied", ""}
+    }
   }()
-
 }
-
 
 func addUser(client *Client, data interface{}){
   var user User
@@ -72,13 +99,35 @@ func addUser(client *Client, data interface{}){
     client.send <- Message{"error", "could not decode addUser"}
     return
   }
+  hashedPassword, _ := HashPassword(user.Password)
+  user.Password = hashedPassword
 
   go func() {
-  if err := client.session.Query("INSERT INTO users (name, user_id) VALUES (?,?)",user.Name, user.User_Id).Exec(); err != nil {
-    fmt.Println(err.Error());
+  var email string
+  if err := client.session.Query("SELECT email FROM users_by_email WHERE email = ?",user.Email).Scan(&email); err != nil {
+
+    if err := client.session.Query("INSERT INTO users_by_email (email, user_id, created_at, firstname, lastname, password) VALUES (?,?,?,?,?,?)",
+                                    user.Email, user.User_Id, user.Created_At, user.Firstname, user.Lastname, user.Password).Exec(); err != nil {
+      client.send <- Message{"error", "could add user to users_by_email"}
+      return
+    }
+
+    if err := client.session.Query("INSERT INTO users_by_id (email, user_id, created_at, firstname, lastname, password) VALUES (?,?,?,?,?,?)",
+                                    user.Email, user.User_Id, user.Created_At, user.Firstname, user.Lastname, user.Password).Exec(); err != nil {
+      client.send <- Message{"error", "could add user to users_by_id"}
+      return
+    }
+    var userAdded User
+    userAdded.Firstname = user.Firstname
+    userAdded.Lastname = user.Lastname
+    userAdded.Email = user.Email
+    userAdded.User_Id = user.User_Id
+    client.send <- Message{"user add", userAdded}
+    return
   }
-  client.send <- Message{"user add", user}
+    client.send <- Message{"email unavailible",""}
   }()
+
 }
 
 func getUserView(client *Client, data interface{}){
@@ -88,15 +137,29 @@ func getUserView(client *Client, data interface{}){
     client.send <- Message{"error", "could not decode getUserView"}
     return
   }
-  fmt.Println(user)
-
+  fmt.Println(user.Email)
   go func() {
-  var name string
+
+  var firstname string
+  var lastname string
   var user_id string
-  if err := client.session.Query("SELECT * FROM users WHERE name = ?",user.Name).Scan(&name, &user_id); err != nil {
-    fmt.Println("User Does Not Exist");
+
+  if(user.User_Id != "" && user.Email == "") {
+    if err := client.session.Query("SELECT firstname, lastname, user_id FROM users_by_id WHERE user_id = ?",user.User_Id).Scan(&firstname, &lastname, &user_id); err != nil {
+      fmt.Println("User Does Not Exist: user_by_id");
+      return
+    }
+  } else {
+    if err := client.session.Query("SELECT firstname, lastname, user_id FROM users_by_email WHERE email = ?",user.Email).Scan(&firstname, &lastname, &user_id); err != nil {
+      fmt.Println("User Does Not Exist: user_by_email");
+      return
+    }
   }
+  
   user.User_Id = user_id
+  user.Firstname = firstname
+  user.Lastname = lastname
+  user.Email = ""
   client.send <- Message{"user get", user}
   }()
 }
@@ -108,7 +171,6 @@ func addPost(client *Client, data interface{}){
     client.send <- Message{"error", "could not decode addPost"}
     return
   }
-
   go func() {
     if err := client.session.Query("INSERT INTO posts (user_id, post_id, content) VALUES (?,?,?)",post.User_Id, post.Post_Id , post.Post).Exec(); err != nil {
       fmt.Println(err.Error());
@@ -119,7 +181,6 @@ func addPost(client *Client, data interface{}){
        client.send <- Message{"error", err.Error()}
 		   fmt.Printf("Something went wrong: %s", err)
 	  }
-    //have to use a different struct
     var postAdded PostAdded
     postAdded.User_Id = post.User_Id
     postAdded.Post_Time = tempUUID.Time()
@@ -141,9 +202,8 @@ func deletePost(client *Client, data interface{}){
     if err := client.session.Query("DELETE FROM posts WHERE user_id = ? AND post_id = ?",post.User_Id, post.Post_Id).Exec(); err != nil {
       fmt.Println(err.Error());
     }
+    client.send <- Message{"post delete", post}
   }()
-  client.send <- Message{"post delete", post}
-  //No need to send anything to the client, deleting posts in state right when the delete post request is sent
 }
 
 func getPosts(client *Client, data interface{}){
@@ -153,7 +213,6 @@ func getPosts(client *Client, data interface{}){
     client.send <- Message{"error", "could not decode getPosts"}
     return
   }
-
   go func() {
     var posts Posts
     var post_id string
@@ -178,9 +237,7 @@ func addProfilePicture(client *Client, data interface{}){
     client.send <- Message{"error", "could not decode addProfilePicture"}
     return
   }
-  fmt.Println(blob)
-
-   go func() {
+  go func() {
     if err := client.session.Query("INSERT INTO profile_pictures (user_id, profile_picture) VALUES (?,?)",blob.User_Id, blob.Data).Exec(); err != nil {
       fmt.Println(err.Error());
     }
@@ -196,7 +253,6 @@ func getProfilePicture(client *Client, data interface{}){
     client.send <- Message{"error", "could not decode getProfilePicture"}
     return
   }
-
   go func() {
     var image string
     var user_id string
