@@ -6,6 +6,8 @@ import (
   "time"
   "github.com/gocql/gocql"
   "golang.org/x/crypto/bcrypt"
+  b64 "encoding/base64"
+  "strings"
 )
 
 type User struct {
@@ -155,7 +157,7 @@ func getUserView(client *Client, data interface{}){
       return
     }
   }
-  
+
   user.User_Id = user_id
   user.Firstname = firstname
   user.Lastname = lastname
@@ -237,8 +239,18 @@ func addProfilePicture(client *Client, data interface{}){
     client.send <- Message{"error", "could not decode addProfilePicture"}
     return
   }
+  // Spliiting up data:image/jpeg;base64,/9j/ffdgfd
+  imageParts := strings.Split(blob.Data, ",")
+  htmlEmbed := imageParts[0]
+  string64 := imageParts[1]
+  sDec, err := b64.StdEncoding.DecodeString(string64)
+  if err != nil {
+    client.send <- Message{"error", "could not decode Base64"}
+    return
+  }
+
   go func() {
-    if err := client.session.Query("INSERT INTO profile_pictures (user_id, profile_picture) VALUES (?,?)",blob.User_Id, blob.Data).Exec(); err != nil {
+    if err := client.session.Query("INSERT INTO profile_pictures (user_id, html_embed, image_blob) VALUES (?,?,?)",blob.User_Id, htmlEmbed, sDec).Exec(); err != nil {
       fmt.Println(err.Error());
     }
     client.send <- Message{"profile picture add", blob}
@@ -254,14 +266,18 @@ func getProfilePicture(client *Client, data interface{}){
     return
   }
   go func() {
-    var image string
     var user_id string
-    if err := client.session.Query("SELECT * FROM profile_pictures WHERE user_id = ?",user.User_Id).Scan(&user_id, &image); err != nil {
+    var htmlEmbed string
+    var string64 []byte
+    if err := client.session.Query("SELECT * FROM profile_pictures WHERE user_id = ?",user.User_Id).Scan(&user_id, &htmlEmbed, &string64); err != nil {
       client.send <- Message{"profile picture get", "" }
       return
     }
+    encodedString := b64.StdEncoding.EncodeToString(string64)
+    //Constructing html base64 embeded image
+    var base64EmbededImage = htmlEmbed + "," + encodedString
     var blob Blob
-    blob.Data = image
+    blob.Data = base64EmbededImage
     blob.User_Id = user_id
     client.send <- Message{"profile picture get", blob}
   }()
