@@ -14,7 +14,7 @@ func addProfilePicture(client *Client, data interface{}){
     client.send <- Message{"error", "could not decode addProfilePicture"}
     return
   }
-  // Spliiting up data:image/jpeg;base64,/9j/ffdgfd
+  // Spliiting up data:image/jpeg;base64,/9j/ffdgfd...
   imageParts := strings.Split(blob.Data, ",")
   htmlEmbed := imageParts[0]
   string64 := imageParts[1]

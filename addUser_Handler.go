@@ -29,6 +29,14 @@ func addUser(client *Client, data interface{}){
       client.send <- Message{"error", "could add user to users_by_id"}
       return
     }
+
+    fullname := user.Firstname + " " + user.Lastname
+    if err := client.session.Query("INSERT INTO users_by_email_like_fullname (fullname, email, user_id, created_at, password) VALUES (?,?,?,?,?)",
+                                    fullname, user.Email, user.User_Id, user.Created_At, user.Password).Exec(); err != nil {
+      client.send <- Message{"error", "could add user to users_by_fullname"}
+      return
+    }
+
     var userAdded User
     userAdded.Firstname = user.Firstname
     userAdded.Lastname = user.Lastname

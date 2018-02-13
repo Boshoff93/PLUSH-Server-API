@@ -25,6 +25,7 @@ func main() {
     router.Handle("user get", getUserView)
     router.Handle("profile picture add", addProfilePicture)
     router.Handle("profile picture get", getProfilePicture)
+    router.Handle("search users", searchUsers)
     http.Handle("/", router)
     http.ListenAndServe(":4000", nil)
 }

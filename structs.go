@@ -13,6 +13,16 @@ type User struct {
   Created_At  string      `cql:"timeuuid"`
 }
 
+type SearchUser struct {
+  Search        string
+}
+
+type SearchedUsers struct {
+  User_Ids     []string
+  Emails       []string
+  Fullnames    []string
+}
+
 type Post struct {
   User_Id     string `cql:"uuid"`
   Post_Id     string `cql:"timeuuid"`
