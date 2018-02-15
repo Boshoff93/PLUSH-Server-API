@@ -1,40 +1,41 @@
 package main
 
 import (
-  "github.com/mitchellh/mapstructure"
+  "net/http"
+  "encoding/json"
+  "github.com/gorilla/mux"
+  "fmt"
 )
 
-func findUser(client *Client, data interface{}){
-  var user User
-  err := mapstructure.Decode(data, &user)
-  if err != nil {
-    client.send <- Message{"error", "could not decode findUser"}
-    return
-  }
+func findUser(w http.ResponseWriter, r *http.Request){
 
+  session := getSession()
+  defer session.Close()
+
+  params:= mux.Vars(r)
+  var user User
+  user.Email = params["email"]
+
+  finished := make(chan bool)
   go func() {
     var email string
     var firstname string
     var lastname string
-    var password string
     var user_id string
-    if err := client.session.Query("SELECT email, firstname, lastname, password, user_id FROM users_by_email WHERE email = ?",
-                                    user.Email).Scan(&email, &firstname, &lastname, &password, &user_id); err != nil {
-
-      client.send <- Message{"account not found", ""}
+    if err := session.Query("SELECT email, firstname, lastname, user_id FROM users_by_email WHERE email = ?",
+                                    user.Email).Scan(&email, &firstname, &lastname, &user_id); err != nil {
+      fmt.Println(err.Error())
       return
     }
-
-    match := CheckPasswordHash(user.Password, password)
-    if(match) {
       var userFound User
       userFound.Firstname = firstname
       userFound.Lastname = lastname
       userFound.Email = email
       userFound.User_Id = user_id
-      client.send <- Message{"access granted", userFound}
-    } else {
-      client.send <- Message{"access denied", ""}
-    }
+
+      w.Header().Set("Content-Type", "application/json")
+      json.NewEncoder(w).Encode(userFound)
+      finished <- true
   }()
+   <- finished
 }
