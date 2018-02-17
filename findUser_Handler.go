@@ -1,14 +1,13 @@
 package main
 
 import (
-  "net/http"
   "encoding/json"
-  "github.com/gorilla/mux"
   "fmt"
+  "github.com/gorilla/mux"
+  "net/http"
 )
 
 func findUser(w http.ResponseWriter, r *http.Request){
-
   session := getSession()
   defer session.Close()
 
@@ -25,6 +24,8 @@ func findUser(w http.ResponseWriter, r *http.Request){
     if err := session.Query("SELECT email, firstname, lastname, user_id FROM users_by_email WHERE email = ?",
                                     user.Email).Scan(&email, &firstname, &lastname, &user_id); err != nil {
       fmt.Println(err.Error())
+      json.NewEncoder(w).Encode("access denied")
+      finished <- true
       return
     }
       var userFound User
@@ -33,7 +34,6 @@ func findUser(w http.ResponseWriter, r *http.Request){
       userFound.Email = email
       userFound.User_Id = user_id
 
-      w.Header().Set("Content-Type", "application/json")
       json.NewEncoder(w).Encode(userFound)
       finished <- true
   }()

@@ -1,13 +1,12 @@
 package main
 
 import (
-  "net/http"
   "encoding/json"
   "fmt"
+  "net/http"
 )
 
 func addUser(w http.ResponseWriter, r *http.Request){
-
   session := getSession()
   defer session.Close()
 
@@ -16,7 +15,6 @@ func addUser(w http.ResponseWriter, r *http.Request){
           http.Error(w, err.Error(), 400)
           return
   }
-  fmt.Println(user)
 
   finished := make(chan bool)
   go func() {
@@ -47,8 +45,9 @@ func addUser(w http.ResponseWriter, r *http.Request){
       userAdded.Lastname = user.Lastname
       userAdded.Email = user.Email
       userAdded.User_Id = user.User_Id
-      w.Header().Set("Content-Type", "application/json")
       json.NewEncoder(w).Encode(userAdded)
+    } else {
+      json.NewEncoder(w).Encode("email unavailible")
     }
     finished <- true
   }()

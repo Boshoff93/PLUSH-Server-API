@@ -7,8 +7,6 @@ import (
   "time"
 )
 
-
-
 func getPosts(w http.ResponseWriter, r *http.Request){
   session := getSession()
   defer session.Close()
@@ -30,7 +28,6 @@ func getPosts(w http.ResponseWriter, r *http.Request){
         posts.Posts = append(posts.Posts ,content)
       }
 
-    w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(posts)
     finished <- true
   }()

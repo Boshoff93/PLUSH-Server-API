@@ -1,13 +1,12 @@
 package main
 
 import (
-  "net/http"
   "encoding/json"
   "github.com/gorilla/mux"
+  "net/http"
 )
 
 func searchUsers(w http.ResponseWriter, r *http.Request){
-
   session := getSession()
   defer session.Close()
 
@@ -27,7 +26,6 @@ func searchUsers(w http.ResponseWriter, r *http.Request){
         searchedUsers.Emails = append(searchedUsers.Emails, email)
         searchedUsers.Fullnames = append(searchedUsers.Fullnames ,fullname)
       }
-      w.Header().Set("Content-Type", "application/json")
       json.NewEncoder(w).Encode(searchedUsers)
       finished <- true
   }()

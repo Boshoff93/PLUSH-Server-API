@@ -1,10 +1,10 @@
 package main
 
 import (
-  "net/http"
+  b64 "encoding/base64"
   "encoding/json"
   "fmt"
-  b64 "encoding/base64"
+  "net/http"
   "strings"
 )
 
@@ -33,7 +33,6 @@ func addProfilePicture(w http.ResponseWriter, r *http.Request){
       fmt.Println(err.Error());
     }
     finished <- true
-    w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(blob)
   }()
   <- finished

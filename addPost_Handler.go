@@ -1,24 +1,25 @@
 package main
 
 import (
+  "encoding/json"
   "fmt"
   "github.com/gocql/gocql"
   "net/http"
-  "encoding/json"
 )
 
 
 
 func addPost(w http.ResponseWriter, r *http.Request){
-  var post Post
-
   session := getSession()
   defer session.Close()
 
+  var post Post
   if err := json.NewDecoder(r.Body).Decode(&post); err != nil {
           http.Error(w, err.Error(), 400)
           return
   }
+  fmt.Println("id: "+ post.User_Id)
+  fmt.Println("post_id: " + post.Post_Id)
   finished := make(chan bool)
   go func() {
     if err := session.Query("INSERT INTO posts (user_id, post_id, content) VALUES (?,?,?)",post.User_Id, post.Post_Id , post.Post).Exec(); err != nil {

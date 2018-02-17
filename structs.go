@@ -45,9 +45,3 @@ type Blob struct {
 	User_Id  string              `cql:"uuid"`
 	Data     string              `cql:"text"`// Formatted as Base64 but I would prefer Base64Url...
 }
-
-
-type Message struct {
-  Name string `json:"name"`
-  Data interface{} `json:"data"`
-}
