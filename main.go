@@ -23,10 +23,11 @@ func main() {
 
     router := mux.NewRouter()
     loggedRouter := handlers.LoggingHandler(os.Stdout, router)
-    headersOk := handlers.AllowedHeaders([]string{"X-Requested-With"})
-    originsOk := handlers.AllowedOrigins([]string{"http://localhost:3000"})
+    headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Authorization"})
+    originsOk := handlers.AllowedOrigins([]string{"*"})
     methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"})
 
+    router.HandleFunc("/plush-api/login",login).Methods("POST")
     router.HandleFunc("/plush-api/user", addUser).Methods("POST")
     router.HandleFunc("/plush-api/user/{email}", findUser).Methods("GET")
     router.HandleFunc("/plush-api/userViewId/{user_id}", getUserViewByUserId).Methods("GET")

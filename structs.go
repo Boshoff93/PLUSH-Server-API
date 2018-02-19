@@ -46,6 +46,18 @@ type Blob struct {
 	Data     string              `cql:"text"`// Formatted as Base64 but I would prefer Base64Url...
 }
 
+type GoogleUser struct {
+    Sub string `json:"sub"`
+    Name string `json:"name"`
+    GivenName string `json:"given_name"`
+    FamilyName string `json:"family_name"`
+    Profile string `json:"profile"`
+    Picture string `json:"picture"`
+    Email string `json:"email"`
+    EmailVerified string `json:"email_verified"`
+    Gender string `json:"gender"`
+}
+
 type Message struct {
   Name string                   `json:"name"`
   Data interface{}              `json:"data"`
