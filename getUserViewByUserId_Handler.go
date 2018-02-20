@@ -18,10 +18,9 @@ func getUserViewByUserId(w http.ResponseWriter, r *http.Request){
 
   finished := make(chan bool)
   go func() {
-    var firstname string
-    var lastname string
+    var display_name string
     var user_id string
-    if err := session.Query("SELECT firstname, lastname, user_id FROM users_by_id WHERE user_id = ?",user.User_Id).Scan(&firstname, &lastname, &user_id); err != nil {
+    if err := session.Query("SELECT display_name, user_id FROM users_by_id WHERE user_id = ?",user.User_Id).Scan(&display_name, &user_id); err != nil {
       fmt.Println(err.Error())
       json.NewEncoder(w).Encode("User does not exist")
       finished <- true
@@ -29,8 +28,7 @@ func getUserViewByUserId(w http.ResponseWriter, r *http.Request){
     }
 
     user.User_Id = user_id
-    user.Firstname = firstname
-    user.Lastname = lastname
+    user.Display_Name = display_name
     json.NewEncoder(w).Encode(user)
     finished <- true
   }()

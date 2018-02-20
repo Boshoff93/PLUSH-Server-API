@@ -28,10 +28,10 @@ func main() {
     methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"})
 
     router.HandleFunc("/plush-api/login",login).Methods("POST")
-    router.HandleFunc("/plush-api/user", addUser).Methods("POST")
-    router.HandleFunc("/plush-api/user/{email}", findUser).Methods("GET")
+    // router.HandleFunc("/plush-api/user", addUser).Methods("POST")
+    // router.HandleFunc("/plush-api/user/{email}", findUser).Methods("GET")
     router.HandleFunc("/plush-api/userViewId/{user_id}", getUserViewByUserId).Methods("GET")
-    router.HandleFunc("/plush-api/userViewEmail/{email}", getUserViewByEmail).Methods("GET")
+  //  router.HandleFunc("/plush-api/userViewEmail/{email}", getUserViewByEmail).Methods("GET")
     router.HandleFunc("/plush-api/searchUsers/{like_name}", searchUsers).Methods("GET")
     router.HandleFunc("/plush-api/post", addPost).Methods("POST")
     router.HandleFunc("/plush-api/post", deletePost).Methods("DELETE")

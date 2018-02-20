@@ -18,13 +18,11 @@ func searchUsers(w http.ResponseWriter, r *http.Request){
   go func() {
     var searchedUsers SearchedUsers
     var user_id string
-    var email string
-    var fullname string
-    itr := session.Query("SELECT email, fullname, user_id FROM users_by_email_like_fullname WHERE fullname Like ? LIMIT 50","%" + search.Search + "%").Iter()
-    for itr.Scan(&email,&fullname, &user_id) {
+    var display_name string
+    itr := session.Query("SELECT display_name, user_id FROM users_by_id_like_display_name WHERE display_name Like ? LIMIT 50","%" + search.Search + "%").Iter()
+    for itr.Scan(&display_name, &user_id) {
 		    searchedUsers.User_Ids = append(searchedUsers.User_Ids, user_id)
-        searchedUsers.Emails = append(searchedUsers.Emails, email)
-        searchedUsers.Fullnames = append(searchedUsers.Fullnames ,fullname)
+        searchedUsers.Display_Names = append(searchedUsers.Display_Names ,display_name)
       }
       json.NewEncoder(w).Encode(searchedUsers)
       finished <- true
