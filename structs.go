@@ -9,6 +9,7 @@ type User struct {
   Display_Name  string            `json: "display_name"  cql:"text"`
   Email         string            `json: "email"      cql:"text"`
   Created_At    string            `json: "created_at" cql:"timeuuid"`
+  Token         string            `json:"token"`
 }
 
 type SearchUser struct {

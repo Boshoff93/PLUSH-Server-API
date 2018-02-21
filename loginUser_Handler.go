@@ -6,6 +6,8 @@ import (
   "google.golang.org/api/oauth2/v2"
   "net/http"
   "encoding/json"
+  "github.com/dgrijalva/jwt-go"
+
 )
 
 
@@ -35,6 +37,17 @@ func login(w http.ResponseWriter, r *http.Request){
     return
   }
   fmt.Println("Access Granted")
+  //Give uswer a token
+  //**************************************************************************
+  accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+   "username": user.Display_Name,
+   "user_id": user.User_Id,
+   })
+  tokenString, error := accessToken.SignedString([]byte("MyFancySecret"))
+  if error != nil {
+   fmt.Println("Token signed string failed: " + error.Error())
+  }
+  //**************************************************************************
 
   user.Email = tokenInfo.Email
   finished := make(chan bool)
@@ -53,17 +66,6 @@ func login(w http.ResponseWriter, r *http.Request){
         return
       }
 
-    
-      var user_id string
-      var email string
-      var fullname string
-      itr := session.Query("SELECT email, display_name, user_id FROM users_by_id_like_display_name WHERE display_name Like ? LIMIT 50","%Wi%").Iter()
-      for itr.Scan(&email,&fullname, &user_id) {
-  		    fmt.Println("ssssssssssssssssssssssssssssss=-----------------" + email + fullname + user_id)
-        }
-
-
-
       if err := session.Query("INSERT INTO users_by_id_like_display_name (user_id, email, created_at, display_name) VALUES (?,?,?,?)",
                               user.User_Id, user.Email, user.Created_At, user.Display_Name).Exec(); err != nil {
         fmt.Println("Could not add user to users_by_id_like_diplay_name, error: " + err.Error())
@@ -71,6 +73,8 @@ func login(w http.ResponseWriter, r *http.Request){
         return
       }
       fmt.Println("user created")
+
+      user.Token = tokenString
       json.NewEncoder(w).Encode(user)
       finished <- true
       return
@@ -80,7 +84,7 @@ func login(w http.ResponseWriter, r *http.Request){
      userFound.Display_Name = display_name
      userFound.Email = email
      userFound.User_Id = user_id
-
+     userFound.Token = tokenString
      json.NewEncoder(w).Encode(userFound)
      finished <- true
    }()
