@@ -33,7 +33,7 @@ func login(w http.ResponseWriter, r *http.Request){
   }
   fmt.Println(tokenInfo.Audience)
   if(tokenInfo.Audience != "729356241272-e9plc3mof68m60u319bjsu46b3udfukv.apps.googleusercontent.com") {
-    json.NewEncoder(w).Encode("access denied")
+    json.NewEncoder(w).Encode(Error{Error:"Access Denied"})
     return
   }
   fmt.Println("Access Granted")
@@ -43,12 +43,12 @@ func login(w http.ResponseWriter, r *http.Request){
    "username": user.Display_Name,
    "user_id": user.User_Id,
    })
-  tokenString, error := accessToken.SignedString([]byte("MyFancySecret"))
-  if error != nil {
-   fmt.Println("Token signed string failed: " + error.Error())
+  tokenString, err := accessToken.SignedString([]byte("MyFancySecret"))
+  if err != nil {
+   fmt.Println("Token signed string failed: " + err.Error())
+   json.NewEncoder(w).Encode(Error{Error: err.Error()})
   }
   //**************************************************************************
-
   user.Email = tokenInfo.Email
   finished := make(chan bool)
 
@@ -62,24 +62,22 @@ func login(w http.ResponseWriter, r *http.Request){
       if err := session.Query("INSERT INTO users_by_id (user_id, email, created_at, display_name) VALUES (?,?,?,?)",
                               user.User_Id, user.Email, user.Created_At, user.Display_Name).Exec(); err != nil {
         fmt.Println("Could not add user to users_by_id, error: " + err.Error())
+        json.NewEncoder(w).Encode(Error{Error:"Could not add user to users_by_id"})
         finished <- true
         return
       }
-
       if err := session.Query("INSERT INTO users_by_id_like_display_name (user_id, email, created_at, display_name) VALUES (?,?,?,?)",
                               user.User_Id, user.Email, user.Created_At, user.Display_Name).Exec(); err != nil {
         fmt.Println("Could not add user to users_by_id_like_diplay_name, error: " + err.Error())
+        json.NewEncoder(w).Encode(Error{Error:"Could not add user to users_by_id_like_diplay_name"})
         finished <- true
         return
       }
-      fmt.Println("user created")
-
       user.Token = tokenString
       json.NewEncoder(w).Encode(user)
       finished <- true
       return
      }
-     fmt.Println("user found")
      var userFound User
      userFound.Display_Name = display_name
      userFound.Email = email

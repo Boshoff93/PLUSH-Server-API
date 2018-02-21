@@ -24,7 +24,7 @@ func getProfilePicture(w http.ResponseWriter, r *http.Request){
     var string64 []byte
     if err := session.Query("SELECT * FROM profile_pictures WHERE user_id = ?",user.User_Id).Scan(&user_id, &htmlEmbed, &string64); err != nil {
       fmt.Println("Could not get profile picture, error: " + err.Error() )
-      json.NewEncoder(w).Encode("")
+      json.NewEncoder(w).Encode(Error{Error: err.Error()})
       finished <- true
       return
     }

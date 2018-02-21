@@ -22,11 +22,10 @@ func getUserViewByUserId(w http.ResponseWriter, r *http.Request){
     var user_id string
     if err := session.Query("SELECT display_name, user_id FROM users_by_id WHERE user_id = ?",user.User_Id).Scan(&display_name, &user_id); err != nil {
       fmt.Println(err.Error())
-      json.NewEncoder(w).Encode("User does not exist")
+      json.NewEncoder(w).Encode(Error{Error: err.Error()})
       finished <- true
       return
     }
-
     user.User_Id = user_id
     user.Display_Name = display_name
     json.NewEncoder(w).Encode(user)

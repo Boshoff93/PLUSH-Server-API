@@ -25,6 +25,7 @@ func addProfilePicture(w http.ResponseWriter, r *http.Request){
   finished := make(chan bool)
   if err != nil {
     fmt.Println("Could not decode profile picture, error: " + err.Error())
+    json.NewEncoder(w).Encode(Error{Error: err.Error()})
     return
   }
 

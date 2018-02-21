@@ -24,6 +24,8 @@ func addPost(w http.ResponseWriter, r *http.Request){
   go func() {
     if err := session.Query("INSERT INTO posts (user_id, post_id, content) VALUES (?,?,?)",post.User_Id, post.Post_Id , post.Post).Exec(); err != nil {
       fmt.Println(err.Error());
+      json.NewEncoder(w).Encode(Error{Error: err.Error()})
+      return
     }
     //Convert string uuidv1 to uuidv1 then extract the Time before sending it back to the client
     tempUUID, err := gocql.ParseUUID(post.Post_Id);

@@ -5,14 +5,12 @@ import (
   "github.com/gorilla/mux"
   "net/http"
   "time"
-  "fmt"
 )
 
 func getPosts(w http.ResponseWriter, r *http.Request){
   session := getSession()
   defer session.Close()
 
-  fmt.Println("We got the posts")
   params:= mux.Vars(r)
   var user User
   user.User_Id = params["user_id"]
