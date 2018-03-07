@@ -21,7 +21,6 @@ func login(w http.ResponseWriter, r *http.Request){
           http.Error(w, err.Error(), 400)
           return
   }
-
   var httpClient = &http.Client{}
   oauth2Service, err := oauth2.New(httpClient)
   tokenInfoCall := oauth2Service.Tokeninfo()

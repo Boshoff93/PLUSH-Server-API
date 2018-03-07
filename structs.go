@@ -5,10 +5,10 @@ import (
 )
 
 type User struct {
-  User_Id       string            `json: "user_id"    cql:"text"`
+  User_Id       string            `json: "user_id"       cql:"text"`
   Display_Name  string            `json: "display_name"  cql:"text"`
-  Email         string            `json: "email"      cql:"text"`
-  Created_At    string            `json: "created_at" cql:"timeuuid"`
+  Email         string            `json: "email"         cql:"text"`
+  Created_At    string            `json: "created_at"    cql:"timeuuid"`
   Token         string            `json: "token"`
 }
 
@@ -18,7 +18,8 @@ type SearchUser struct {
 
 type SearchedUsers struct {
   User_Ids         []string         `json: "user_ids"`
-  Display_Names    []string         `json: "fullnames"`
+  Display_Names    []string         `json: "display_names"`
+  Avatars          []string         `json: "avatars"`
 }
 
 type Post struct {
@@ -42,7 +43,7 @@ type Posts struct {
 
 type Blob struct {
 	User_Id  string              `cql:"uuid"`
-	Data     string              `cql:"text"`// Formatted as Base64 but I would prefer Base64Url...
+	Data     string              `cql:"text"`
 }
 
 type Error struct {

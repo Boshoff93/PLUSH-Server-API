@@ -34,11 +34,12 @@ func main() {
     //router.HandleFunc("/plush-api/userViewEmail/{email}", getUserViewByEmail).Methods("GET")
     router.HandleFunc("/plush-api/userViewId/{user_id}", ValidateMiddleware(getUserViewByUserId)).Methods("GET")
     router.HandleFunc("/plush-api/searchUsers/{like_name}", ValidateMiddleware(searchUsers)).Methods("GET")
-    router.HandleFunc("/plush-api/post",  ValidateMiddleware(addPost)).Methods("POST")
-    router.HandleFunc("/plush-api/post",  ValidateMiddleware(deletePost)).Methods("DELETE")
-    router.HandleFunc("/plush-api/getposts/{user_id}",  ValidateMiddleware(getPosts)).Methods("GET")
-    router.HandleFunc("/plush-api/profilePicture",  ValidateMiddleware(addProfilePicture)).Methods("POST")
-    router.HandleFunc("/plush-api/profilePicture/{user_id}",  ValidateMiddleware(getProfilePicture)).Methods("GET")
+    router.HandleFunc("/plush-api/post", ValidateMiddleware(addPost)).Methods("POST")
+    router.HandleFunc("/plush-api/post", ValidateMiddleware(deletePost)).Methods("DELETE")
+    router.HandleFunc("/plush-api/getposts/{user_id}", ValidateMiddleware(getPosts)).Methods("GET")
+    router.HandleFunc("/plush-api/profilePicture", ValidateMiddleware(addProfilePicture)).Methods("POST")
+    //router.HandleFunc("/plush-api/profilePicture/{user_id}",  ValidateMiddleware(getProfilePicture)).Methods("GET")
+    router.HandleFunc("/plush-api/profilePicture/{user_id}", ValidateMiddleware(getProfilePicture)).Methods("GET")
     http.ListenAndServe(":8000", handlers.CORS(headersOk, methodsOk, originsOk)(loggedRouter))
 
 }
