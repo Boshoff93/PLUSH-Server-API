@@ -8,7 +8,6 @@ import (
 
 
 func deletePost(w http.ResponseWriter, r *http.Request){
-  fmt.Println("whuuut")
   var post Post
   session := getSession()
   defer session.Close()

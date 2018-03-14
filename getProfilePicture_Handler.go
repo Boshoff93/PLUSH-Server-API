@@ -1,7 +1,6 @@
 package main
 
 import (
-  b64 "encoding/base64"
   "encoding/json"
   "fmt"
   "github.com/gorilla/mux"
@@ -19,20 +18,17 @@ func getProfilePicture(w http.ResponseWriter, r *http.Request){
 
   finished := make(chan bool)
   go func() {
-    var user_id string
-    var htmlEmbed string
-    var string64 []byte
-    if err := session.Query("SELECT * FROM profile_pictures WHERE user_id = ?",user.User_Id).Scan(&user_id, &htmlEmbed, &string64); err != nil {
+     var user_id string
+
+    var pp_name string
+    if err := session.Query("SELECT * FROM profile_picture_names WHERE user_id = ?",user.User_Id).Scan(&user_id, &pp_name); err != nil {
       fmt.Println("Could not get profile picture, error: " + err.Error() )
       json.NewEncoder(w).Encode(Error{Error: err.Error()})
       finished <- true
       return
     }
-    encodedString := b64.StdEncoding.EncodeToString(string64)
-    //Constructing html base64 embeded image
-    var base64EmbededImage = htmlEmbed + "," + encodedString
     var blob Blob
-    blob.Data = base64EmbededImage
+    blob.Pp_Name = pp_name
     blob.User_Id = user_id
     json.NewEncoder(w).Encode(blob)
     finished <- true

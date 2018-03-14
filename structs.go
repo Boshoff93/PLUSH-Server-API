@@ -42,8 +42,8 @@ type Posts struct {
 }
 
 type Blob struct {
-	User_Id  string              `cql:"uuid"`
-	Data     string              `cql:"text"`
+	User_Id     string              `cql:"uuid"`
+	Pp_Name     string              `cql:"text"`
 }
 
 type Error struct {
