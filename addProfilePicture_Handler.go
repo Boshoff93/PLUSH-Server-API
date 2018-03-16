@@ -1,11 +1,9 @@
 package main
 
 import (
-  //b64 "encoding/base64"
   "encoding/json"
   "fmt"
   "net/http"
-  //"strings"
 )
 
 func addProfilePicture(w http.ResponseWriter, r *http.Request){

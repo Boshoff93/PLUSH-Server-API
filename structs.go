@@ -19,7 +19,7 @@ type SearchUser struct {
 type SearchedUsers struct {
   User_Ids         []string         `json: "user_ids"`
   Display_Names    []string         `json: "display_names"`
-  Avatars          []string         `json: "avatars"`
+  Pp_Names         []string         `json: "pp_names"`
 }
 
 type Post struct {

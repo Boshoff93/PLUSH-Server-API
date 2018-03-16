@@ -5,7 +5,6 @@ import (
   "github.com/gorilla/mux"
   "net/http"
   "fmt"
-  b64 "encoding/base64"
 )
 
 func searchUsers(w http.ResponseWriter, r *http.Request){
@@ -28,19 +27,12 @@ func searchUsers(w http.ResponseWriter, r *http.Request){
     }
 
     for _, id := range searchedUsers.User_Ids {
-      var user_id string
-      var htmlEmbed string
-      var string64 []byte
-      if err := session.Query("SELECT * FROM profile_pictures WHERE user_id = ?",id).Scan(&user_id, &htmlEmbed, &string64); err != nil {
-        fmt.Println("Could not get profile picture, error: " + err.Error() )
-        json.NewEncoder(w).Encode(Error{Error: err.Error()})
-        finished <- true
-        return
+      var pp_name string
+      if err := session.Query("SELECT pp_name FROM profile_picture_names WHERE user_id = ?",id).Scan(&pp_name); err != nil {
+        fmt.Println("Could not find profile picture name, error: " + err.Error() )
+        searchedUsers.Pp_Names = append(searchedUsers.Pp_Names, "not found")
       }
-      encodedString := b64.StdEncoding.EncodeToString(string64)
-      //Constructing html base64 embeded image
-      var base64EmbededImage = htmlEmbed + "," + encodedString
-      searchedUsers.Avatars = append(searchedUsers.Avatars ,base64EmbededImage)
+      searchedUsers.Pp_Names = append(searchedUsers.Pp_Names, pp_name)
     }
       json.NewEncoder(w).Encode(searchedUsers)
       finished <- true
