@@ -30,12 +30,13 @@ func searchUsers(w http.ResponseWriter, r *http.Request){
       var pp_name string
       if err := session.Query("SELECT pp_name FROM profile_picture_names WHERE user_id = ?",id).Scan(&pp_name); err != nil {
         fmt.Println("Could not find profile picture name, error: " + err.Error() )
-        searchedUsers.Pp_Names = append(searchedUsers.Pp_Names, "not found")
+        searchedUsers.Pp_Names = append(searchedUsers.Pp_Names, "empty")
+      } else {
+        searchedUsers.Pp_Names = append(searchedUsers.Pp_Names, pp_name)
       }
-      searchedUsers.Pp_Names = append(searchedUsers.Pp_Names, pp_name)
     }
-      json.NewEncoder(w).Encode(searchedUsers)
-      finished <- true
+    json.NewEncoder(w).Encode(searchedUsers)
+    finished <- true
   }()
   <- finished
 }
