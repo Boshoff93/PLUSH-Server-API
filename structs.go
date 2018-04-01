@@ -52,7 +52,7 @@ type Error struct {
 
 type IdFields struct {
   User_Id    string             `json: "user_id" cql:"text"`
-  Follower_Id  string           `json: "follower_id" cql:"text"`
+  Follow_Id  string           `json: "follow_id" cql:"text"`
 }
 
 type BoolValue struct {

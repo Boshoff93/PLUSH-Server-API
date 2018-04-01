@@ -6,11 +6,10 @@ import (
   "net/http"
 )
 
-func addFollow(w http.ResponseWriter, r *http.Request){
+
+func deleteFollow(w http.ResponseWriter, r *http.Request){
   session := getSession()
   defer session.Close()
-
-  
 
   var ids IdFields
   if err := json.NewDecoder(r.Body).Decode(&ids); err != nil {
@@ -20,18 +19,20 @@ func addFollow(w http.ResponseWriter, r *http.Request){
 
   finished := make(chan bool)
   go func() {
-    if err := session.Query("INSERT INTO following (user_id, follow_id) VALUES (?,?)",ids.User_Id, ids.Follow_Id).Exec(); err != nil {
+    if err := session.Query("DELETE FROM following WHERE user_id = ? AND follow_id = ?",ids.User_Id, ids.Follow_Id).Exec(); err != nil {
       fmt.Println(err.Error());
-      finished <- true
       json.NewEncoder(w).Encode(Error{Error: err.Error()})
+      finished <- true
+      return
     }
-    if err := session.Query("INSERT INTO followers (user_id, follow_id) VALUES (?,?)", ids.Follow_Id, ids.User_Id).Exec(); err != nil {
+    if err := session.Query("DELETE FROM followers WHERE user_id = ? AND follow_id = ?",ids.Follow_Id, ids.User_Id).Exec(); err != nil {
       fmt.Println(err.Error());
-      finished <- true
       json.NewEncoder(w).Encode(Error{Error: err.Error()})
+      finished <- true
+      return
     }
-    finished <- true
     json.NewEncoder(w).Encode(ids)
+    finished <- true
   }()
   <- finished
 }
