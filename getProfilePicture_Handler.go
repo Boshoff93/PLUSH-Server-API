@@ -18,8 +18,7 @@ func getProfilePicture(w http.ResponseWriter, r *http.Request){
 
   finished := make(chan bool)
   go func() {
-     var user_id string
-
+    var user_id string
     var pp_name string
     if err := session.Query("SELECT * FROM profile_picture_names WHERE user_id = ?",user.User_Id).Scan(&user_id, &pp_name); err != nil {
       fmt.Println("Could not get profile picture, error: " + err.Error() )

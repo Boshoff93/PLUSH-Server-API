@@ -23,7 +23,7 @@ type SearchedUsers struct {
 }
 
 type Post struct {
-  User_Id     string            `json: "user_id" cql:"uuid"`
+  User_Id     string            `json: "user_id" cql:"text"`
   Post_Id     string            `json: "post_id" cql:"timeuuid"`
   Post        string            `json: "user_id" cql:"text"`
 }
@@ -42,12 +42,21 @@ type Posts struct {
 }
 
 type Blob struct {
-	User_Id     string              `cql:"uuid"`
-	Pp_Name     string              `cql:"text"`
+	User_Id     string             `cql:"uuid"`
+	Pp_Name     string             `cql:"text"`
 }
 
 type Error struct {
   Error    string               `json: "error"`
+}
+
+type IdFields struct {
+  User_Id    string             `json: "user_id" cql:"text"`
+  Follower_Id  string           `json: "follower_id" cql:"text"`
+}
+
+type BoolValue struct {
+  Condition   bool              `json: "condition"`
 }
 
 

@@ -40,6 +40,8 @@ func main() {
     router.HandleFunc("/plush-api/profilePicture", ValidateMiddleware(addProfilePicture)).Methods("POST")
     //router.HandleFunc("/plush-api/profilePicture/{user_id}",  ValidateMiddleware(getProfilePicture)).Methods("GET")
     router.HandleFunc("/plush-api/profilePicture/{user_id}", ValidateMiddleware(getProfilePicture)).Methods("GET")
+    router.HandleFunc("/plush-api/follower", ValidateMiddleware(addFollow)).Methods("POST")
+    router.HandleFunc("/plush-api/checkFollowing/{id_fields}", ValidateMiddleware(checkFollowing)).Methods("GET")
     http.ListenAndServe(":8000", handlers.CORS(headersOk, methodsOk, originsOk)(loggedRouter))
 
 }
