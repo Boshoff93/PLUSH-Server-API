@@ -41,6 +41,13 @@ type Posts struct {
   Posts        []string         `json: "posts"`
 }
 
+type FollowingPosts struct {
+  Display_Names     []string          `json: "display_names"`
+  Following_Ids     []string          `json: "following_ids"`
+  Post_Times        []time.Time       `json: "post_times"`
+  Posts             []string          `json: "posts"`
+}
+
 type Blob struct {
 	User_Id     string             `cql:"uuid"`
 	Pp_Name     string             `cql:"text"`
