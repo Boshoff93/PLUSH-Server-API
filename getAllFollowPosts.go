@@ -41,19 +41,24 @@ func getAllFollowPosts(w http.ResponseWriter, r *http.Request){
           following_posts.Posts = append(following_posts.Posts ,content)
         }
     }
-    //Add ow user information
-    //Sort each array
 
-    // var posts Posts
-    // var post_id string
-    // var content string
-    // var post_time time.Time
-    // itr := session.Query("SELECT toTimeStamp(post_id), post_id, content FROM posts WHERE user_id = ?",user.User_Id).Iter()
-    // for itr.Scan(&post_time,&post_id, &content) {
-		//     posts.Post_Ids = append(posts.Post_Ids, post_id)
-    //     posts.Post_Times = append(posts.Post_Times, post_time)
-    //     posts.Posts = append(posts.Posts ,content)
-    //   }
+    //This needs to be improved, bubble sort is not an efficient solution
+    var done bool = false;
+    for {
+        done = true;
+        for i := 0; i < len(following_posts.Post_Times) - 1; i++ {
+          if(following_posts.Post_Times[i].Before(following_posts.Post_Times[i+1])) {
+            done = false;
+            following_posts.Post_Times[i], following_posts.Post_Times[i+1] = following_posts.Post_Times[i+1], following_posts.Post_Times[i]
+            following_posts.Display_Names[i], following_posts.Display_Names[i+1] = following_posts.Display_Names[i+1], following_posts.Display_Names[i]
+            following_posts.Following_Ids[i], following_posts.Following_Ids[i+1] = following_posts.Following_Ids[i+1], following_posts.Following_Ids[i]
+            following_posts.Posts[i], following_posts.Posts[i+1] = following_posts.Posts[i+1], following_posts.Posts[i]
+          }
+        }
+        if(done == true) {
+          break
+        }
+    }
 
     json.NewEncoder(w).Encode(following_posts)
     finished <- true
