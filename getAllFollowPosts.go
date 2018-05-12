@@ -5,6 +5,7 @@ import (
   "github.com/gorilla/mux"
   "net/http"
   "time"
+  "fmt"
 )
 
 func getAllFollowPosts(w http.ResponseWriter, r *http.Request){
@@ -28,12 +29,23 @@ func getAllFollowPosts(w http.ResponseWriter, r *http.Request){
     itr := session.Query("SELECT follow_id FROM following WHERE user_id = ?", user.User_Id).Iter()
     var follow_id_temp string
     var content string
+    var pp_name string
     var post_time time.Time
+
     for itr.Scan(&follow_id_temp) {
       //For every follow_id run a query to get the neccasary information and add to a array in struct
       var display_name string
       session.Query("SELECT display_name FROM users_by_id WHERE user_id = ?",follow_id_temp).Scan(&display_name)
       itrFolID := session.Query("SELECT toTimeStamp(post_id), content FROM posts WHERE user_id = ?",follow_id_temp).Iter()
+
+      if err := session.Query("SELECT pp_name FROM profile_picture_names WHERE user_id = ?",follow_id_temp).Scan(&pp_name); err != nil {
+        fmt.Println("Could not find profile picture name, error: " + err.Error() )
+        following_posts.Pp_Names = append(following_posts.Pp_Names, "empty")
+      } else {
+        following_posts.Pp_Names = append(following_posts.Pp_Names, pp_name)
+      }
+      following_posts.Unique_Following_Ids = append(following_posts.Unique_Following_Ids, follow_id_temp)
+
       for itrFolID.Scan(&post_time, &content) {
           following_posts.Display_Names = append(following_posts.Display_Names, display_name)
           following_posts.Following_Ids = append(following_posts.Following_Ids, follow_id_temp)

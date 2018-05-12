@@ -42,10 +42,12 @@ type Posts struct {
 }
 
 type FollowingPosts struct {
-  Display_Names     []string          `json: "display_names"`
-  Following_Ids     []string          `json: "following_ids"`
-  Post_Times        []time.Time       `json: "post_times"`
-  Posts             []string          `json: "posts"`
+  Unique_Following_Ids      []string          `json: "unique_following_ids"`
+  Pp_Names                  []string          `json: "pp_names"`
+  Display_Names             []string          `json: "display_names"`
+  Following_Ids             []string          `json: "following_ids"`
+  Post_Times                []time.Time       `json: "post_times"`
+  Posts                     []string          `json: "posts"`
 }
 
 type Blob struct {
