@@ -43,6 +43,7 @@ func main() {
     router.HandleFunc("/plush-api/follow", ValidateMiddleware(addFollow)).Methods("POST")
     router.HandleFunc("/plush-api/follow", ValidateMiddleware(deleteFollow)).Methods("DELETE")
     router.HandleFunc("/plush-api/checkFollowing/{id_fields}", ValidateMiddleware(checkFollowing)).Methods("GET")
+    router.HandleFunc("/plush-api/getFollowCounts/{user_id}", getFollowCounts).Methods("GET")
     http.ListenAndServe(":8000", handlers.CORS(headersOk, methodsOk, originsOk)(loggedRouter))
 
 }

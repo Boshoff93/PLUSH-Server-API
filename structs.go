@@ -50,6 +50,11 @@ type FollowingPosts struct {
   Posts                     []string          `json: "posts"`
 }
 
+type FollowCounts struct {
+  FollowingCount    int     `json: "followings_count"`
+  FollowerCount     int     `json: "followers_count"`
+}
+
 type Blob struct {
 	User_Id     string             `cql:"uuid"`
 	Pp_Name     string             `cql:"text"`
