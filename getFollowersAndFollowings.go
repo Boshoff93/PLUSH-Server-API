@@ -5,6 +5,7 @@ import (
   "github.com/gorilla/mux"
   "net/http"
   "fmt"
+  "strings"
 )
 
 func getFollowersAndFollowings(w http.ResponseWriter, r *http.Request){
@@ -53,6 +54,40 @@ func getFollowersAndFollowings(w http.ResponseWriter, r *http.Request){
 
     followers_and_followings.FollowingCount = countFollowing;
     followers_and_followings.FollowerCount = countFollowers;
+
+    //This needs to be improved, bubble sort is not an efficient solution
+    var done bool = false;
+    for {
+        done = true;
+        for i := 0; i < len(followers_and_followings.Following_Display_Names) - 1; i++ {
+          if(strings.Compare(strings.ToLower(followers_and_followings.Following_Display_Names[i]), strings.ToLower(followers_and_followings.Following_Display_Names[i+1])) > 0) {
+            done = false;
+            followers_and_followings.Following_Display_Names[i], followers_and_followings.Following_Display_Names[i+1] = followers_and_followings.Following_Display_Names[i+1], followers_and_followings.Following_Display_Names[i]
+            followers_and_followings.Following_Pp_Names[i], followers_and_followings.Following_Pp_Names[i+1] = followers_and_followings.Following_Pp_Names[i+1], followers_and_followings.Following_Pp_Names[i]
+            followers_and_followings.Following_Ids[i], followers_and_followings.Following_Ids[i+1] = followers_and_followings.Following_Ids[i+1], followers_and_followings.Following_Ids[i]
+          }
+        }
+        if(done == true) {
+          break
+        }
+    }
+
+    //This needs to be improved, bubble sort is not an efficient solution
+    done = false;
+    for {
+        done = true;
+        for i := 0; i < len(followers_and_followings.Follower_Display_Names) - 1; i++ {
+          if(strings.Compare(strings.ToLower(followers_and_followings.Follower_Display_Names[i]), strings.ToLower(followers_and_followings.Follower_Display_Names[i+1])) > 0 ) {
+            done = false;
+            followers_and_followings.Follower_Display_Names[i], followers_and_followings.Follower_Display_Names[i+1] = followers_and_followings.Follower_Display_Names[i+1], followers_and_followings.Follower_Display_Names[i]
+            followers_and_followings.Follower_Pp_Names[i], followers_and_followings.Follower_Pp_Names[i+1] = followers_and_followings.Follower_Pp_Names[i+1], followers_and_followings.Follower_Pp_Names[i]
+            followers_and_followings.Follower_Ids[i], followers_and_followings.Follower_Ids[i+1] = followers_and_followings.Follower_Ids[i+1], followers_and_followings.Follower_Ids[i]
+          }
+        }
+        if(done == true) {
+          break
+        }
+    }
 
     //Sort by Display_Name
     //Make sure in sync with other arrays
