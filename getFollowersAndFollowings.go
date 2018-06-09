@@ -89,9 +89,6 @@ func getFollowersAndFollowings(w http.ResponseWriter, r *http.Request){
         }
     }
 
-    //Sort by Display_Name
-    //Make sure in sync with other arrays
-
     fmt.Println(followers_and_followings)
 
     json.NewEncoder(w).Encode(followers_and_followings)
