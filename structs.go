@@ -50,6 +50,17 @@ type FollowingPosts struct {
   Posts                     []string          `json: "posts"`
 }
 
+type FollowersAndFollowings struct {
+  Follower_Ids                  []string          `json: "follower_ids"`
+  Following_Ids                 []string          `json: "following_ids"`
+  Follower_Pp_Names             []string          `json: "follower_pp_names"`
+  Following_Pp_Names            []string          `json: "following_pp_names"`
+  Follower_Display_Names        []string          `json: "follower_display_names"`
+  Following_Display_Names       []string          `json: "follower_display_names"`
+  FollowingCount                int               `json: "followings_count"`
+  FollowerCount                 int               `json: "followers_count"`
+}
+
 type FollowCounts struct {
   FollowingCount    int     `json: "followings_count"`
   FollowerCount     int     `json: "followers_count"`
