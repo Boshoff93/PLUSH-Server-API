@@ -45,6 +45,8 @@ func main() {
     router.HandleFunc("/plush-api/checkFollowing/{id_fields}", ValidateMiddleware(checkFollowing)).Methods("GET")
     router.HandleFunc("/plush-api/getFollowCounts/{user_id}", ValidateMiddleware(getFollowCounts)).Methods("GET")
     router.HandleFunc("/plush-api/getFollowersAndFollowings/{user_id}", ValidateMiddleware(getFollowersAndFollowings)).Methods("GET")
+    router.HandleFunc("/plush-api/editDisplayName", ValidateMiddleware(editDisplayName)).Methods("POST")
+    router.HandleFunc("/plush-api/getDisplayName/{user_id}", ValidateMiddleware(getDisplayName)).Methods("GET")
     http.ListenAndServe(":8000", handlers.CORS(headersOk, methodsOk, originsOk)(loggedRouter))
 
 }

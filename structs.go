@@ -80,6 +80,11 @@ type IdFields struct {
   Follow_Id  string           `json: "follow_id" cql:"text"`
 }
 
+type EditDisplayName struct {
+  User_Id    string             `json: "user_id" cql:"text"`
+  Display_Name  string           `json: "display_name" cql:"text"`
+}
+
 type BoolValue struct {
   Condition   bool              `json: "condition"`
 }
