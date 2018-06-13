@@ -28,6 +28,11 @@ type Post struct {
   Post        string            `json: "user_id" cql:"text"`
 }
 
+type Post_User_Id struct {
+  User_Id     string            `json: "user_id" cql:"text"`
+  Post_Id     string            `json: "post_id" cql:"timeuuid"`
+}
+
 type PostAdded struct {
   User_Id       string          `json: "user_id"`
   Post_Time     time.Time       `json: "post_time"`
@@ -89,6 +94,12 @@ type BoolValue struct {
   Condition   bool              `json: "condition"`
 }
 
+type Posts_Likes_Dislikes struct {
+  Post_Ids                  []string         `json: "post_ids" cql:"timeuuid"`
+  User_Ids                  []string          `json: "user_ids"`
+  Likes                     []int             `json: "likes"`
+  Dislikes                  []int             `json: "dislikes"`
+}
 
 type Message struct {
   Name string                   `json:"name"`
