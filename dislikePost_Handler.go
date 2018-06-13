@@ -8,7 +8,7 @@ import (
 
 
 
-func likePost(w http.ResponseWriter, r *http.Request){
+func dislikePost(w http.ResponseWriter, r *http.Request){
   session := getSession()
   defer session.Close()
 
@@ -41,8 +41,8 @@ func likePost(w http.ResponseWriter, r *http.Request){
         return
     }
 
-    if(like == 0) {
-      if err := session.Query("UPDATE posts_likes_dislikes SET like=?, dislike=? WHERE post_id=? AND user_id=?",1,0,post_user_id.Post_Id, post_user_id.User_Id).Exec(); err != nil {
+    if(dislike == 0) {
+      if err := session.Query("UPDATE posts_likes_dislikes SET like=?, dislike=? WHERE post_id=? AND user_id=?",0,1,post_user_id.Post_Id, post_user_id.User_Id).Exec(); err != nil {
         fmt.Println(err.Error());
         json.NewEncoder(w).Encode(Error{Error: err.Error()})
         finished <- true
