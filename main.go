@@ -49,6 +49,8 @@ func main() {
     router.HandleFunc("/plush-api/getDisplayName/{user_id}", ValidateMiddleware(getDisplayName)).Methods("GET")
     router.HandleFunc("/plush-api/like", ValidateMiddleware(likePost)).Methods("POST")
     router.HandleFunc("/plush-api/dislike", ValidateMiddleware(dislikePost)).Methods("POST")
+    router.HandleFunc("/plush-api/getLikesAndDislikes/{user_id}", ValidateMiddleware(getPostsLikesAndDislikes)).Methods("GET")
+    router.HandleFunc("/plush-api/getPostsLikesAndDislikesTotals/{post_ids}", ValidateMiddleware(getPostsLikesAndDislikesTotals)).Methods("GET")
     http.ListenAndServe(":8000", handlers.CORS(headersOk, methodsOk, originsOk)(loggedRouter))
 
 }

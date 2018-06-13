@@ -5,9 +5,6 @@ import (
   "fmt"
   "net/http"
 )
-
-
-
 func likePost(w http.ResponseWriter, r *http.Request){
   session := getSession()
   defer session.Close()

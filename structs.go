@@ -99,7 +99,10 @@ type Posts_Likes_Dislikes struct {
   User_Ids                  []string          `json: "user_ids"`
   Likes                     []int             `json: "likes"`
   Dislikes                  []int             `json: "dislikes"`
+  TotalLikes                []int             `json: "total_likes"`
+  TotalDislikes             []int             `json: "total_dislikes"`
 }
+
 
 type Message struct {
   Name string                   `json:"name"`
