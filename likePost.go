@@ -75,11 +75,8 @@ func getPosts_Likes_Dislikes(session *gocql.Session, finished chan bool, posts_l
   var like int
   var dislike int
 
-  itr := session.Query("SELECT post_id FROM posts WHERE user_id = ?",post_user_id.User_Id).Iter()
-  for itr.Scan(&post_id) {
-    if err := session.Query("SELECT * FROM posts_likes_dislikes WHERE post_id = ?",post_id).Scan(&post_id, &user_id, &dislike, &like) ; err != nil {
-      fmt.Println("SOmething went wrong: " + err.Error())
-    }
+  itr := session.Query("SELECT * FROM posts_likes_dislikes WHERE user_id = ?",post_user_id.User_Id).Iter()
+  for itr.Scan(&post_id, &user_id, &dislike, &like) {
     posts_likes_dislikes.Post_Ids = append(posts_likes_dislikes.Post_Ids, post_id)
     posts_likes_dislikes.User_Ids = append(posts_likes_dislikes.User_Ids, user_id)
     posts_likes_dislikes.Dislikes = append(posts_likes_dislikes.Dislikes ,dislike)
