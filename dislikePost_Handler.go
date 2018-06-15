@@ -28,7 +28,7 @@ func dislikePost(w http.ResponseWriter, r *http.Request){
     if err := session.Query("SELECT post_id, user_id, like, dislike FROM posts_likes_dislikes WHERE post_id = ? AND user_id= ?",
                                   post_user_id.Post_Id,post_user_id.User_Id).Scan(&post_id, &user_id, &like, &dislike); err != nil {
         if err := session.Query("INSERT INTO posts_likes_dislikes (post_id, user_id, like, dislike) VALUES (?,?,?,?)",
-                                              post_user_id.Post_Id, post_user_id.User_Id , 1, 0).Exec(); err != nil {
+                                              post_user_id.Post_Id, post_user_id.User_Id , 0, 1).Exec(); err != nil {
           fmt.Println(err.Error());
           json.NewEncoder(w).Encode(Error{Error: err.Error()})
           finished <- true
