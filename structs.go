@@ -53,6 +53,7 @@ type FollowingPosts struct {
   Following_Ids             []string          `json: "following_ids"`
   Post_Times                []time.Time       `json: "post_times"`
   Posts                     []string          `json: "posts"`
+  Post_Ids                  []string          `json: "post_ids" cql:"timeuuid"`
 }
 
 type FollowersAndFollowings struct {
