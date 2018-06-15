@@ -27,6 +27,14 @@ func addPost(w http.ResponseWriter, r *http.Request){
       json.NewEncoder(w).Encode(Error{Error: err.Error()})
       return
     }
+
+    if err := session.Query("INSERT INTO posts_likes_dislikes (post_id, user_id, like, dislike) VALUES (?,?,?,?)",
+                                          post.Post_Id, post.User_Id , 0, 0).Exec(); err != nil {
+      fmt.Println(err.Error());
+      json.NewEncoder(w).Encode(Error{Error: err.Error()})
+      finished <- true
+      return
+    }
     //Convert string uuidv1 to uuidv1 then extract the Time before sending it back to the client
     tempUUID, err := gocql.ParseUUID(post.Post_Id);
     if err != nil {
