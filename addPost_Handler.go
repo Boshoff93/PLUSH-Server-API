@@ -18,11 +18,15 @@ func addPost(w http.ResponseWriter, r *http.Request){
           http.Error(w, err.Error(), 400)
           return
   }
-  fmt.Println("id: "+ post.User_Id)
-  fmt.Println("post_id: " + post.Post_Id)
   finished := make(chan bool)
+  if(post.Type_Of_Post == 1) {
+    post.Post = post.Post_Id + "_post_picture"
+  }
   go func() {
-    if err := session.Query("INSERT INTO posts (user_id, post_id, content) VALUES (?,?,?)",post.User_Id, post.Post_Id , post.Post).Exec(); err != nil {
+
+
+
+    if err := session.Query("INSERT INTO posts (user_id, post_id, content, type) VALUES (?,?,?,?)",post.User_Id, post.Post_Id , post.Post, post.Type_Of_Post).Exec(); err != nil {
       fmt.Println(err.Error());
       json.NewEncoder(w).Encode(Error{Error: err.Error()})
       return
@@ -45,6 +49,7 @@ func addPost(w http.ResponseWriter, r *http.Request){
     postAdded.Post_Time = tempUUID.Time()
     postAdded.Post_Id = post.Post_Id
     postAdded.Post = post.Post
+    postAdded.Type_Of_Post = post.Type_Of_Post
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(postAdded)
     finished <- true

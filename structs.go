@@ -23,9 +23,10 @@ type SearchedUsers struct {
 }
 
 type Post struct {
-  User_Id     string            `json: "user_id" cql:"text"`
-  Post_Id     string            `json: "post_id" cql:"timeuuid"`
-  Post        string            `json: "user_id" cql:"text"`
+  User_Id              string            `json: "user_id" cql:"text"`
+  Post_Id              string            `json: "post_id" cql:"timeuuid"`
+  Post                 string            `json: "post"    cql:"text"`
+  Type_Of_Post         int               `json: "type"    cql:"text"`
 }
 
 type Post_User_Id struct {
@@ -38,12 +39,14 @@ type PostAdded struct {
   Post_Time     time.Time       `json: "post_time"`
   Post_Id       string          `json: "post_id"`
   Post          string          `json: "post"`
+  Type_Of_Post  int             `json: "type_of_post"`
 }
 
 type Posts struct {
-  Post_Ids     []string         `json: "post_ids"`
-  Post_Times   []time.Time      `json: "post_times"`
-  Posts        []string         `json: "posts"`
+  Post_Ids           []string         `json: "post_ids"`
+  Post_Times         []time.Time      `json: "post_times"`
+  Posts              []string         `json: "posts"`
+  Types_Of_Posts     []int            `json: "types_of_posts"`
 }
 
 type FollowingPosts struct {
@@ -54,6 +57,7 @@ type FollowingPosts struct {
   Post_Times                []time.Time       `json: "post_times"`
   Posts                     []string          `json: "posts"`
   Post_Ids                  []string          `json: "post_ids" cql:"timeuuid"`
+  Types_Of_Posts            []int             `json: "types_of_posts"`
 }
 
 type FollowersAndFollowings struct {
