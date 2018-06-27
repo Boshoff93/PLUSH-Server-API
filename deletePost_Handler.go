@@ -19,6 +19,15 @@ func deletePost(w http.ResponseWriter, r *http.Request){
 
   finished := make(chan bool)
   go func() {
+    var post_name string
+    if err := session.Query("SELECT content FROM posts WHERE user_id = ? AND post_id = ?",post.User_Id, post.Post_Id).Scan(&post_name); err != nil {
+      fmt.Println(err.Error());
+      json.NewEncoder(w).Encode(Error{Error: err.Error()})
+      finished <- true
+      return
+    }
+    post.Post = post_name
+
     if err := session.Query("DELETE FROM posts WHERE user_id = ? AND post_id = ?",post.User_Id, post.Post_Id).Exec(); err != nil {
       fmt.Println(err.Error());
       json.NewEncoder(w).Encode(Error{Error: err.Error()})
